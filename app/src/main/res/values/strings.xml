@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ADS-B Monitor</string>
+    <string name="Title">ADS-B Monitor</string>
+    <string name="gps_light">GPS</string>
+    <string name="traffic_light">Traffic</string>
+    <string name="ahrs_light">AHRS</string>
+    <string name="uplink_light">Uplink</string>
+    <string name="heartbeat_light">Heart Beat</string>
+    <string name="open_mode">Open Mode</string>
+    <string name="ff_mode">FF Mode</string>
+</resources>
