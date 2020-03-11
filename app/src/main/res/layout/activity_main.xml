@@ -228,4 +228,15 @@
         app:layout_constraintBottom_toBottomOf="@+id/hb_light"
         app:layout_constraintEnd_toStartOf="@+id/hb_light" />
 
+    <TextView
+        android:id="@+id/textViewError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="31dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="#EC0A0A"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="@+id/textViewuplink"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

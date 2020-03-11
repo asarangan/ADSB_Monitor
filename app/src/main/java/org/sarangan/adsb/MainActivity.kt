@@ -45,6 +45,7 @@ open class MainActivity : AppCompatActivity() {
             resources.getIdentifier("textViewahrs", "id", this.packageName),
             resources.getIdentifier("textViewuplink", "id", this.packageName)
         )
+        val txtViewError = resources.getIdentifier("textViewError", "id", this.packageName)
         for (i in 0..4) {
             findViewById<TextView>(txtFieldArray[i]).text =
                 packetCount[i].toString()
@@ -67,7 +68,14 @@ open class MainActivity : AppCompatActivity() {
         val ipAddress255 =
             ipAddressInArray[0] + "." + ipAddressInArray[1] + "." + ipAddressInArray[2] + ".255"
         val buffer = ByteArray(64)
-        val socketIn = MulticastSocket(4000) //Most ADSB transmit GDL-90 on port 4000. Otherwise this may need to be changed.
+        var socketIn = DatagramSocket()
+        try {
+            socketIn =
+                MulticastSocket(4000) //Most ADSB transmit GDL-90 on port 4000. Otherwise this may need to be changed.
+        }
+        catch(e:java.lang.Exception){
+            findViewById<TextView>(txtViewError).text = "Error: Port 4000 is Locked"
+        }
         socketIn.soTimeout = 2000   //When Stratus is in FF mode, it transmits in a different port, so a timeout is necessary for socketIn
         val packetIn = DatagramPacket(buffer, buffer.size)
         val socketOut = DatagramSocket()
