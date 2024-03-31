@@ -8,4 +8,5 @@
     <string name="heartbeat_light">Heart Beat</string>
     <string name="open_mode">Open Mode</string>
     <string name="ff_mode">FF Mode</string>
+    <string name="Port4000Error">Error: Port 4000 is Locked</string>
 </resources>

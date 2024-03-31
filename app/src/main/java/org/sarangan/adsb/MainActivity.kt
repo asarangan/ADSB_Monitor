@@ -3,7 +3,6 @@ package org.sarangan.adsb
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiManager.MulticastLock
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -38,14 +37,20 @@ open class MainActivity : AppCompatActivity() {
         val mySwitch = findViewById<SwitchCompat>(R.id.switch1)
         mySwitch.isChecked = true
 
-        txtFieldArray = arrayOf<Int>(
-            resources.getIdentifier("textViewhb", "id", this.packageName),
-            resources.getIdentifier("textViewgps", "id", this.packageName),
-            resources.getIdentifier("textViewtraffic", "id", this.packageName),
-            resources.getIdentifier("textViewahrs", "id", this.packageName),
-            resources.getIdentifier("textViewuplink", "id", this.packageName)
+        txtFieldArray = arrayOf(
+            R.id.textViewhb,
+            R.id.textViewgps,
+            R.id.textViewtraffic,
+            R.id.textViewahrs,
+            R.id.textViewuplink
+//            resources.getIdentifier("textViewhb", "id", this.packageName),
+//            resources.getIdentifier("textViewgps", "id", this.packageName),
+//            resources.getIdentifier("textViewtraffic", "id", this.packageName),
+//            resources.getIdentifier("textViewahrs", "id", this.packageName),
+//            resources.getIdentifier("textViewuplink", "id", this.packageName)
         )
-        val txtViewError = resources.getIdentifier("textViewError", "id", this.packageName)
+        //val txtViewError = resources.getIdentifier("textViewError", "id", this.packageName)
+        val txtViewError = R.id.textViewError
         for (i in 0..4) {
             findViewById<TextView>(txtFieldArray[i]).text =
                 packetCount[i].toString()
@@ -60,9 +65,9 @@ open class MainActivity : AppCompatActivity() {
 
 
         val wifiManager: WifiManager =
-            getApplicationContext().getSystemService(WIFI_SERVICE) as WifiManager
+            applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
         val lock: MulticastLock = wifiManager.createMulticastLock("Log_Tag")
-        lock.acquire(); //Multicast lock is needed because some devices block UDP broadcast
+        lock.acquire() //Multicast lock is needed because some devices block UDP broadcast
         val ipAddress = ipToString(wifiManager.connectionInfo.ipAddress)
         val ipAddressInArray = ipAddress.split(".")
         val ipAddress255 =
@@ -74,7 +79,8 @@ open class MainActivity : AppCompatActivity() {
                 MulticastSocket(4000) //Most ADSB transmit GDL-90 on port 4000. Otherwise this may need to be changed.
         }
         catch(e:java.lang.Exception){
-            findViewById<TextView>(txtViewError).text = "Error: Port 4000 is Locked"
+            //findViewById<TextView>(txtViewError).text = "Error: Port 4000 is Locked"
+            findViewById<TextView>(txtViewError).text = resources.getString(R.string.Port4000Error)
         }
         socketIn.soTimeout = 2000   //When Stratus is in FF mode, it transmits in a different port, so a timeout is necessary for socketIn
         val packetIn = DatagramPacket(buffer, buffer.size)
@@ -124,7 +130,7 @@ open class MainActivity : AppCompatActivity() {
             while (true) {
                 try {
                     if (!lock.isHeld) { //On some Android (Motorola MotoG), lock needs to be continuously checked.
-                        lock.acquire();
+                        lock.acquire()
                     }
                     if (ffFlag) {   //On startup, send command to Stratus switch to open mode
                         udpSend()
@@ -214,8 +220,8 @@ open class MainActivity : AppCompatActivity() {
         timerArray[buttonCounter].schedule(timerTask, 2500)
     }
 
-    fun ffStatus(view: View) {
-        val mySwitch = findViewById<SwitchCompat>(R.id.switch1);
+    fun ffStatus() {
+        val mySwitch = findViewById<SwitchCompat>(R.id.switch1)
         ffStatus = !mySwitch.isChecked
         ffFlag = true
     }
