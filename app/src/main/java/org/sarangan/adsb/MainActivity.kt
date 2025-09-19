@@ -3,6 +3,7 @@ package org.sarangan.adsb
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiManager.MulticastLock
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -24,9 +25,9 @@ val lightArray = arrayOf(
 var txtFieldArray = arrayOf(0, 0, 0, 0, 0)
 var packetCount = arrayOf(0, 0, 0, 0, 0)
 val timerArray = arrayOf(Timer(), Timer(), Timer(), Timer(), Timer())
-var ffStatus: Boolean = false
-var ffFlag: Boolean = true
-
+var ffChange: Boolean = true //This is just a status change boolean.
+// It is set when the switch is moved.
+// We want to trigger UDPSend to run when the app starts (with the switch in the ON position)
 
 open class MainActivity : AppCompatActivity() {
 
@@ -35,7 +36,11 @@ open class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val mySwitch = findViewById<SwitchCompat>(R.id.switch1)
-        mySwitch.isChecked = true
+        mySwitch.isChecked = true //Start with the switch set to Open mode
+        mySwitch.setOnCheckedChangeListener{_, isChecked ->
+            ffChange = true
+            //When there is any change in switch position, ffChange is set to true
+        }
 
         txtFieldArray = arrayOf(
             R.id.textViewhb,
@@ -77,12 +82,12 @@ open class MainActivity : AppCompatActivity() {
         try {
             socketIn =
                 MulticastSocket(4000) //Most ADSB transmit GDL-90 on port 4000. Otherwise this may need to be changed.
-        }
-        catch(e:java.lang.Exception){
+        } catch (e: java.lang.Exception) {
             //findViewById<TextView>(txtViewError).text = "Error: Port 4000 is Locked"
             findViewById<TextView>(txtViewError).text = resources.getString(R.string.Port4000Error)
         }
-        socketIn.soTimeout = 2000   //When Stratus is in FF mode, it transmits in a different port, so a timeout is necessary for socketIn
+        socketIn.soTimeout =
+            2000   //When Stratus is in FF mode, it transmits in a different port, so a timeout is necessary for socketIn
         val packetIn = DatagramPacket(buffer, buffer.size)
         val socketOut = DatagramSocket()
         socketOut.broadcast = true  //Not sure if this is needed
@@ -96,16 +101,17 @@ open class MainActivity : AppCompatActivity() {
             0x6E.toByte(),
             0x37.toByte()
         )
-        val sendDataClose: ByteArray = byteArrayOf(  //Byte sequence to switch Stratus to Foreflight-only Mode
-            0xC2.toByte(),
-            0x53.toByte(),
-            0xFF.toByte(),
-            0x56.toByte(),
-            0x01.toByte(),
-            0x00.toByte(),
-            0x6D.toByte(),
-            0x36.toByte()
-        )
+        val sendDataClose: ByteArray =
+            byteArrayOf(  //Byte sequence to switch Stratus to Foreflight-only Mode
+                0xC2.toByte(),
+                0x53.toByte(),
+                0xFF.toByte(),
+                0x56.toByte(),
+                0x01.toByte(),
+                0x00.toByte(),
+                0x6D.toByte(),
+                0x36.toByte()
+            )
 
         fun udpSend() {
             //C2 53 FF 56 01 01 6E 37 (UDP Port 41500) to switch to Open Mode
@@ -113,8 +119,10 @@ open class MainActivity : AppCompatActivity() {
             val sendData: ByteArray
             if (mySwitch.isChecked) {
                 sendData = sendDataOpen
+                println("Open")
             } else {
                 sendData = sendDataClose
+                println("Close")
             }
             val sendPacket = DatagramPacket(
                 sendData,
@@ -132,9 +140,9 @@ open class MainActivity : AppCompatActivity() {
                     if (!lock.isHeld) { //On some Android (Motorola MotoG), lock needs to be continuously checked.
                         lock.acquire()
                     }
-                    if (ffFlag) {   //On startup, send command to Stratus switch to open mode
+                    if (ffChange) {   //We want to send the open or close UDP packet only once when the switch position changes so we need to set the ffChange to false after running it once.
                         udpSend()
-                        ffFlag = false
+                        ffChange = false
                     }
 
                     socketIn.receive(packetIn)
@@ -220,12 +228,9 @@ open class MainActivity : AppCompatActivity() {
         timerArray[buttonCounter].schedule(timerTask, 2500)
     }
 
-    fun ffStatus() {
-        val mySwitch = findViewById<SwitchCompat>(R.id.switch1)
-        ffStatus = !mySwitch.isChecked
-        ffFlag = true
-    }
 }
+
+
 
 
 

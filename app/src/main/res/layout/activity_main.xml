@@ -168,7 +168,6 @@
         android:layout_marginTop="50dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:onClick="ffStatus"
         android:scaleX="2"
         android:scaleY="2"
         android:textColorHighlight="@color/colorPrimary"
